@@ -2,8 +2,10 @@ package com.sharif.ecomm.controller;
 
 import com.sharif.ecomm.config.JwtProvider;
 import com.sharif.ecomm.exception.UserException;
+import com.sharif.ecomm.model.Cart;
 import com.sharif.ecomm.model.User;
 import com.sharif.ecomm.repository.UserRepository;
+import com.sharif.ecomm.service.CartService;
 import com.sharif.ecomm.service.CustomUserServiceImplementation;
 import com.sharif.ecomm.utils.AuthResponse;
 import com.sharif.ecomm.utils.LoginRequest;
@@ -34,6 +36,9 @@ public class AuthController {
     private JwtProvider jwtProvider;
 
     @Autowired
+    private CartService cartService;
+
+    @Autowired
     private CustomUserServiceImplementation customUserDetails;
 
     @PostMapping("/signup")
@@ -53,6 +58,10 @@ public class AuthController {
         createdUser.setLastName(lastName);
         createdUser.setRole("user");
         User save = this.userRepository.save(createdUser);
+
+//        create cart instantly when user is created
+        Cart cart = cartService.createCart(save);
+
         Authentication authentication=new UsernamePasswordAuthenticationToken(save.getEmail(), save.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token=jwtProvider.generateToken(authentication);
